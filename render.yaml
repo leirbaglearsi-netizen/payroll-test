@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: payroll-system
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: payroll-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: APP_ENV
+        value: production
+      - key: FIREBASE_API_KEY
+        sync: false
+      - key: FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: FIREBASE_APP_ID
+        sync: false
+      - key: SUPERADMIN_EMAILS
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: DEFAULT_USER_ROLE
+        value: employee
+
+databases:
+  - name: payroll-db
+    plan: free
