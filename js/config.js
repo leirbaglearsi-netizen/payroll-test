@@ -1,9 +1,9 @@
 // config.js
 window.ENV = {
-  FIREBASE_API_KEY: "AIzaSyBkXvL7QF9Xx-9xVvL7QF9Xx-9xVvL7QF9Xx",
-  FIREBASE_AUTH_DOMAIN: "payroll-system-test.firebaseapp.com",
-  FIREBASE_PROJECT_ID: "payroll-system-test",
-  FIREBASE_STORAGE_BUCKET: "payroll-system-test.firebasestorage.app",
-  FIREBASE_MESSAGING_SENDER_ID: "123456789012",
-  FIREBASE_APP_ID: "1:123456789012:web:abc123def456"
+  FIREBASE_API_KEY: "AIzaSyBOnaZ7LJL-5_DeK1NAN38IPEzgNqxRoIA",
+  FIREBASE_AUTH_DOMAIN: "payroll-system-test-138a4.firebaseapp.com",
+  FIREBASE_PROJECT_ID: "payroll-system-test-138a4",
+  FIREBASE_STORAGE_BUCKET: "payroll-system-test-138a4.firebasestorage.app",
+  FIREBASE_MESSAGING_SENDER_ID: "884544639724",
+  FIREBASE_APP_ID: "1:884544639724:web:ef78e804e9b4c4f7754bc9"
 };
