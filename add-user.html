@@ -5,6 +5,11 @@
     <title>Add User - Philtech GMA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/add-employee.css">
 </head>
@@ -31,18 +36,18 @@
 
             <div class="form-grid">
 
-                <input type="text" id="username" placeholder="Username" required>
+                <input type="email" id="email" placeholder="Email" required>
+
+                <input type="text" id="username" placeholder="Username (optional)">
 
                 <input type="password" id="password" placeholder="Password" required>
 
                 <div class="dropdown-container">
                     <input type="text" id="role" placeholder="Role" readonly required>
                     <div class="dropdown-menu" id="roleDropdownMenu">
-                        <div onclick="selectRole('Administrator')">Administrator</div>
-                        <div onclick="selectRole('Superadmin')">Superadmin</div>
-                        <div onclick="selectRole('Payroll Staff')">Payroll Staff</div>
-                        <div onclick="selectRole('Teacher')">Teacher</div>
-                        <div onclick="selectRole('Viewer')">Viewer</div>
+                        <div onclick="selectRole('superadmin')">Superadmin</div>
+                        <div onclick="selectRole('admin')">Admin (Accountant)</div>
+                        <div onclick="selectRole('employee')">Employee</div>
                     </div>
                 </div>
 
@@ -54,10 +59,23 @@
                     </div>
                 </div>
 
+                <!-- Employee details (shown only when role is employee) -->
+                <div id="employeeFields" style="display: none; grid-column: span 2;">
+                    <hr style="margin: 20px 0; border-color: #e8d79f;">
+                    <h3 style="color: white; margin-bottom: 20px;">Employee Details</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <input type="text" id="fullName" placeholder="Full Name">
+                        <input type="text" id="position" placeholder="Position">
+                        <input type="number" id="salary" placeholder="Base Salary">
+                        <input type="text" id="employmentType" placeholder="Employment Type">
+                    </div>
+                </div>
+
             </div>
 
             <div class="form-buttons">
-                <button type="submit" class="save-btn">Save</button>
+                <button type="submit" class="save-btn">Save User</button>
                 <button type="button" class="cancel-btn" onclick="goBack()">Cancel</button>
             </div>
 
@@ -66,9 +84,26 @@
     </div>
 
 </main>
+
+<!-- Firebase Config -->
+<script>
+// STEP 1: Initialize Firebase with your config
+const firebaseConfig = {
+    apiKey: "AIzaSyBOnaZ7LJL-5_DeK1NAN38IPEzgNqxRoIA",
+    authDomain: "payroll-system-test-138a4.firebaseapp.com",
+    projectId: "payroll-system-test-138a4",
+    storageBucket: "payroll-system-test-138a4.firebasestorage.app",
+    messagingSenderId: "884544639724",
+    appId: "1:884544639724:web:ef78e804e9b4c4f7754bc9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+</script>
+
 <script src="js/database.js"></script>
 <script src="js/navigation.js"></script>
 <script src="js/add-user.js"></script>
 </body>
 </html>
-
