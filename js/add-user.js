@@ -1,115 +1,139 @@
-// Add User Module
-console.log("ADD USER JS LOADED");
+// js/add-user.js
 
+// Check if user is superadmin
 window.addEventListener("DOMContentLoaded", async () => {
-    // Initialize database
-    await Database.initDB();
-    await Database.seedTestData();
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || user.role !== 'superadmin') {
+        alert('Access denied. Superadmin only.');
+        window.location.href = 'dashboard.html';
+        return;
+    }
+    
+    // Initialize dropdowns
+    setupDropdowns();
+});
 
-    // BACK BUTTON
-    window.goBack = function() {
-        window.location.href = "user-mgmt.html";
-    };
-
-    // ROLE DROPDOWN
+function setupDropdowns() {
+    // Role dropdown
     const roleInput = document.getElementById("role");
-    const roleDropdownMenu = document.getElementById("roleDropdownMenu");
+    const roleMenu = document.getElementById("roleDropdownMenu");
 
-    if (roleInput && roleDropdownMenu) {
+    if (roleInput && roleMenu) {
         roleInput.addEventListener("click", () => {
-            roleDropdownMenu.style.display =
-                roleDropdownMenu.style.display === "block" ? "none" : "block";
+            roleMenu.style.display = roleMenu.style.display === "block" ? "none" : "block";
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener("click", (e) => {
-            if (!roleInput.contains(e.target) && !roleDropdownMenu.contains(e.target)) {
-                roleDropdownMenu.style.display = "none";
+            if (!roleInput.contains(e.target) && !roleMenu.contains(e.target)) {
+                roleMenu.style.display = "none";
             }
         });
     }
 
-    window.selectRole = function(role) {
-        document.getElementById("role").value = role;
-        roleDropdownMenu.style.display = "none";
-    };
-
-    // STATUS DROPDOWN
+    // Status dropdown
     const statusInput = document.getElementById("status");
-    const statusDropdownMenu = document.getElementById("statusDropdownMenu");
+    const statusMenu = document.getElementById("statusDropdownMenu");
 
-    if (statusInput && statusDropdownMenu) {
+    if (statusInput && statusMenu) {
         statusInput.addEventListener("click", () => {
-            statusDropdownMenu.style.display =
-                statusDropdownMenu.style.display === "block" ? "none" : "block";
+            statusMenu.style.display = statusMenu.style.display === "block" ? "none" : "block";
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener("click", (e) => {
-            if (!statusInput.contains(e.target) && !statusDropdownMenu.contains(e.target)) {
-                statusDropdownMenu.style.display = "none";
+            if (!statusInput.contains(e.target) && !statusMenu.contains(e.target)) {
+                statusMenu.style.display = "none";
             }
         });
     }
+}
 
-    window.selectStatus = function(status) {
-        document.getElementById("status").value = status;
-        statusDropdownMenu.style.display = "none";
-    };
+// Select role function
+window.selectRole = function(role) {
+    document.getElementById("role").value = role;
+    document.getElementById("roleDropdownMenu").style.display = "none";
+    
+    // Show/hide employee fields based on role
+    const employeeFields = document.getElementById("employeeFields");
+    if (role === 'employee') {
+        employeeFields.style.display = 'block';
+    } else {
+        employeeFields.style.display = 'none';
+    }
+};
 
-    // FORM SUBMIT
-    const form = document.getElementById("userForm");
+// Select status function
+window.selectStatus = function(status) {
+    document.getElementById("status").value = status;
+    document.getElementById("statusDropdownMenu").style.display = "none";
+};
 
-    if (!form) {
-        console.error("Form not found");
+// Handle form submission
+document.getElementById("userForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const username = document.getElementById("username").value.trim() || email;
+    const password = document.getElementById("password").value.trim();
+    const role = document.getElementById("role").value;
+    const status = document.getElementById("status").value;
+
+    // Validation
+    if (!email || !password || !role || !status) {
+        alert("Please fill in all required fields");
         return;
     }
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        console.log("FORM SUBMITTED");
+    try {
+        // STEP 5: Create user in Firebase
+        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        const uid = userCredential.user.uid;
 
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
-        const role = document.getElementById("role").value;
-        const status = document.getElementById("status").value;
+        // Store user data in Firestore
+        await db.collection('users').doc(uid).set({
+            uid: uid,
+            email: email,
+            username: username,
+            role: role,
+            status: status,
+            createdBy: JSON.parse(localStorage.getItem('user')).username,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-        // Validation
-        if (!username || !password || !role || !status) {
-            alert("Please fill in all fields");
-            return;
+        // If role is employee, also create employee record
+        if (role === 'employee') {
+            const fullName = document.getElementById("fullName").value;
+            const position = document.getElementById("position").value;
+            const salary = document.getElementById("salary").value;
+            const employmentType = document.getElementById("employmentType").value;
+
+            if (!fullName || !position || !salary || !employmentType) {
+                alert("Please fill in all employee details");
+                return;
+            }
+
+            await db.collection('employees').add({
+                firebaseUid: uid,
+                full_name: fullName,
+                position: position,
+                base_salary: parseFloat(salary),
+                employment_type: employmentType,
+                email: email,
+                status: 'Active',
+                createdBy: JSON.parse(localStorage.getItem('user')).username,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
         }
 
-        // Check if username already exists
-        const existingUsers = await Database.getAllUsers();
-        const usernameExists = existingUsers.some(u => u.username.toLowerCase() === username.toLowerCase());
-        
-        if (usernameExists) {
-            alert("Username already exists. Please choose a different username.");
-            return;
-        }
+        alert("User created successfully in Firebase!");
+        window.location.href = "user-mgmt.html";
 
-        // Generate new ID
-        const newId = existingUsers.length > 0 ? Math.max(...existingUsers.map(u => u.id)) + 1 : 1;
-
-        // Create new user
-        const newUser = {
-            id: newId,
-            username,
-            password,
-            role,
-            status
-        };
-
-        try {
-            // Save to database
-            await Database.addUser(newUser);
-            alert("User added successfully!");
-            window.location.href = "user-mgmt.html";
-        } catch (error) {
-            console.error("Error adding user:", error);
-            alert("Error adding user. Please try again.");
-        }
-    });
+    } catch (error) {
+        console.error("Error creating user:", error);
+        alert("Error: " + error.message);
+    }
 });
 
+// Go back function
+window.goBack = function() {
+    window.location.href = "user-mgmt.html";
+};
